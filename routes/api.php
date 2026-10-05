@@ -7,3 +7,5 @@ use Illuminate\Support\Facades\Route;
 Route::post('/parcels', [ParcelController::class, 'store']);
 
 Route::get('/parcels/{tracking_code}', [ParcelController::class, 'show']);
+
+Route::patch('/parcels/{tracking_code}/status', [ParcelController::class, 'updateStatus']);

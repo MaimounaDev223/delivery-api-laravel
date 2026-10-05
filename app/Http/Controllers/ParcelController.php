@@ -41,10 +41,22 @@ class ParcelController
         ], 200);
     }
 
-    public function update(Request $request, Parcel $parcel)
-    {
-        //
-    }
+    public function updateStatus(Request $request, string $tracking_code)
+{
+    $validated = $request->validate([
+        'status' => 'required|string|in:pending,in_transit,delivered,cancelled',
+    ]);
+
+    $parcel = Parcel::where('tracking_code', $tracking_code)->firstOrFail();
+    $parcel->update([
+        'status' => $validated['status'],
+    ]);
+
+    return response()->json([
+        'message' => 'Statut mis à jour avec succès',
+        'data' => $parcel
+    ], 200);
+}
 
     public function destroy(Parcel $parcel)
     {

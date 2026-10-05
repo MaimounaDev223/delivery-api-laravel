@@ -1,8 +1,6 @@
 <?php
 
 use App\Models\Parcel;
-use Tests\TestCase;
-
 
 test('un utilisateur peut enregistrer un nouveau colis', function () {
     $data = [
@@ -25,7 +23,6 @@ test('un utilisateur peut enregistrer un nouveau colis', function () {
 });
 
 test('un utilisateur peut consulter les details d un colis avec son code de suivi', function () {
-    // 1. Préparation (Arrange)
     $parcel = Parcel::create([
         'tracking_code' => 'TRK-TEST1234',
         'sender_name' => 'Maimouna',
@@ -35,10 +32,8 @@ test('un utilisateur peut consulter les details d un colis avec son code de suiv
         'status' => 'pending',
     ]);
 
-    // 2. Action (Act)
     $response = $this->getJson("/api/parcels/{$parcel->tracking_code}");
 
-    // 3. Assertion (Assert)
     $response->assertStatus(200)
         ->assertJson([
             'data' => [
@@ -47,4 +42,27 @@ test('un utilisateur peut consulter les details d un colis avec son code de suiv
                 'status' => 'pending',
             ]
         ]);
+});
+
+test('un utilisateur peut mettre a jour le statut d un colis', function () {
+    $parcel = Parcel::create([
+        'tracking_code' => 'TRK-STATUS123',
+        'sender_name' => 'Maimouna',
+        'recipient_name' => 'Amadou',
+        'recipient_phone' => '+22370000000',
+        'destination_address' => 'Bamako, Mali',
+        'status' => 'pending',
+    ]);
+
+    $response = $this->patchJson("/api/parcels/{$parcel->tracking_code}/status", [
+        'status' => 'in_transit',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.status', 'in_transit');
+
+    $this->assertDatabaseHas('parcels', [
+        'tracking_code' => 'TRK-STATUS123',
+        'status' => 'in_transit',
+    ]);
 });
