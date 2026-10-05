@@ -65,4 +65,31 @@ test('un utilisateur peut mettre a jour le statut d un colis', function () {
         'tracking_code' => 'TRK-STATUS123',
         'status' => 'in_transit',
     ]);
+
+    
+});
+
+test('renvoie une erreur 404 si le colis n existe pas', function () {
+    $response = $this->getJson('/api/parcels/TRK-INEXISTANT');
+
+    $response->assertStatus(404);
+});
+
+test('refuse un statut invalide lors de la mise a jour', function () {
+    $parcel = Parcel::create([
+        'tracking_code' => 'TRK-VAL123',
+        'sender_name' => 'Maimouna',
+        'recipient_name' => 'Amadou',
+        'recipient_phone' => '+22370000000',
+        'destination_address' => 'Bamako, Mali',
+        'status' => 'pending',
+    ]);
+
+    // On tente d'envoyer un statut non autorisé
+    $response = $this->patchJson("/api/parcels/{$parcel->tracking_code}/status", [
+        'status' => 'statut_inconnu',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['status']);
 });
